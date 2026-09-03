@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absence Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); }
+        .login-container { background: white; padding: 50px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 90%; max-width: 500px; }
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-header h1 { font-size: 32px; color: #1e40af; margin-bottom: 8px; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; }
+        
+        .login-btn { width: 100%; padding: 12px; background: #1e40af; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+        .login-btn:hover { background: #1e3a8a; }
+        
+        .error { display: none; padding: 12px; background: #ffebee; border: 1px solid #ef5350; border-radius: 6px; color: #c62828; margin-bottom: 16px; }
+        .error.show { display: block; }
+        
+        .success { display: none; padding: 12px; background: #e8f5e9; border: 1px solid #4caf50; border-radius: 6px; color: #2e7d32; margin-bottom: 16px; }
+        .success.show { display: block; }
+        
+        .credentials { background: #e3f2fd; border: 1px solid #90caf9; padding: 16px; border-radius: 6px; font-size: 12px; color: #1565c0; margin-top: 20px; }
+        .credentials strong { display: block; margin-bottom: 8px; }
+        .cred { padding: 4px 0; font-family: monospace; }
+        
+        .main { display: none; }
+        .main.active { display: block; }
+        
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        header { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 30px 20px; margin-bottom: 30px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 28px; }
+        
+        .user-info { background: rgba(255,255,255,0.15); padding: 10px 16px; border-radius: 6px; font-size: 13px; }
+        .user-info strong { display: block; }
+        
+        .logout { background: rgba(255,255,255,0.2); color: white; padding: 10px 16px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; cursor: pointer; }
+        
+        .tabs { display: flex; gap: 8px; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px; }
+        .tab { padding: 12px 20px; border: none; background: none; cursor: pointer; font-weight: 500; color: #666; border-bottom: 3px solid transparent; }
+        .tab.active { color: #1e40af; border-bottom-color: #1e40af; }
+        
+        .content { display: none; }
+        .content.active { display: block; }
+        
+        .card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-bottom: 20px; }
+        .card h2 { margin-bottom: 20px; color: #1e40af; }
+        
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .metric { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; text-align: center; }
+        .metric-val { font-size: 32px; font-weight: 700; color: #1e40af; }
+        .metric-lbl { font-size: 12px; color: #666; margin-top: 8px; text-transform: uppercase; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f9f9f9; padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid #e0e0e0; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+        tbody tr:hover { background: #fafafa; }
+        
+        .btn { padding: 6px 12px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .btn:hover { background: #45a049; }
+        
+        .btn-primary { background: #1e40af; color: white; padding: 10px 20px; font-size: 14px; }
+        .btn-primary:hover { background: #1e3a8a; }
+        
+        .name { color: #1e40af; cursor: pointer; text-decoration: underline; }
+        .name:hover { text-decoration: none; }
+        
+        .search-box { width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 16px; font-size: 14px; }
+        
+        .type-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .type-option { padding: 12px; border: 2px solid #e0e0e0; background: white; border-radius: 6px; cursor: pointer; text-align: center; font-weight: 500; }
+        .type-option:hover { border-color: #1e40af; }
+        .type-option.selected { border-color: #1e40af; background: #e3f2fd; color: #1e40af; }
+        
+        .employee-details { background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: none; }
+        .employee-details.show { display: block; }
+        
+        .autocomplete-suggestions { position: absolute; background: white; border: 1px solid #e0e0e0; border-top: none; border-radius: 0 0 6px 6px; max-height: 250px; overflow-y: auto; width: 100%; z-index: 1000; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .autocomplete-suggestions.show { display: block; }
+        .autocomplete-suggestion { padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+        .autocomplete-suggestion:hover { background: #f5f5f5; }
+        
+        .form-group-wrapper { position: relative; margin-bottom: 16px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); align-items: center; justify-content: center; overflow-y: auto; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); width: 90%; max-width: 700px; margin: 20px auto; max-height: 90vh; overflow-y: auto; }
+        .modal-header { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #1e40af; display: flex; justify-content: space-between; align-items: center; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        .modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+        
+        .employee-profile { background: #f9f9f9; padding: 16px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #1e40af; }
+        .profile-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; }
+        
+        .absence-record { background: #fafafa; padding: 14px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #1e40af; }
+        .absence-record.active { border-left-color: #ff9800; background: #fff8f0; }
+        .absence-record.completed { border-left-color: #4caf50; background: #f8f9f8; }
+        .absence-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .absence-type { font-weight: 600; color: #1e40af; }
+        .absence-status { font-size: 11px; padding: 3px 8px; border-radius: 12px; }
+        .absence-detail { font-size: 12px; color: #666; padding: 4px 0; }
+        
+        .cert-auto-info { padding: 10px; background: #f0f0f0; border-radius: 4px; font-size: 12px; color: #666; margin-top: 8px; }
+        
+        .info-box { background: #e3f2fd; border-left: 4px solid #1e40af; padding: 12px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; color: #1565c0; }
+        .warning-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; border-radius: 4px; margin-bottom: 16px; font-size: 13px; color: #e65100; }
+        .docusign-link { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px; border-radius: 4px; margin-bottom: 16px; }
+        .docusign-link a { display: inline-block; background: #4caf50; color: white; padding: 10px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <h1><i class="fas fa-calendar-check"></i> Absence Tracker</h1>
+                <p>Enterprise Management System</p>
+            </div>
+
+            <div class="error" id="err"></div>
+
+            <div class="form-group">
+                <label>User Type</label>
+                <select id="type">
+                    <option value="">-- Select --</option>
+                    <option value="admin">HR Administrator</option>
+                    <option value="manager">Site Manager</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="user" placeholder="Kim or Fernando">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="pass" placeholder="kim123">
+            </div>
+
+            <button class="login-btn" onclick="doLogin()">Login</button>
+
+            <div class="credentials">
+                <strong>Demo Credentials:</strong>
+                <div class="cred"><strong>Admins:</strong> Kim / kim123, Maddie / maddie123</div>
+                <div class="cred" style="margin-top: 8px;"><strong>Managers:</strong> Fernando / fernando123, Mauricio / mauricio123, Neil / neil123, Paola / paola123, Patricia / patricia123</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RETURN MODAL -->
+    <div id="returnModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Mark Employee as Returned</span>
+                <button class="close-btn" onclick="closeReturnModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label><strong>Return Date</strong></label>
+                    <input type="date" id="returnDateInput" onchange="calcCertOnReturn()">
+                </div>
+                <div id="certTypeInfo"></div>
+                <div id="docusignInfo"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeReturnModal()">Cancel</button>
+                <button class="btn-primary" onclick="confirmReturn()"><i class="fas fa-external-link-alt"></i> Confirm & Open Forms</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="historyTitle">Employee History</span>
+                <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="historyBody"></div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeHistoryModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="mainApp" class="main">
+        <div class="container">
+            <header>
+                <h1>Absence Tracker</h1>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <div class="user-info">
+                        <strong id="uname">User</strong>
+                        <span id="urole"></span>
+                    </div>
+                    <button class="logout" onclick="doLogout()">Logout</button>
+                </div>
+            </header>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab(event, 'dash')">Dashboard</button>
+                <button class="tab" onclick="showTab(event, 'new')">New Record</button>
+                <button class="tab" onclick="showTab(event, 'all')">All Records</button>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div id="dash" class="content active">
+                <h2>System Overview</h2>
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-val" id="total">0</div>
+                        <div class="metric-lbl">Total Records</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-val" id="active">0</div>
+                        <div class="metric-lbl">Active</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-val" id="sites">0</div>
+                        <div class="metric-lbl">Your Sites</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-val" id="emps">0</div>
+                        <div class="metric-lbl">Employees</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Active Absences - Mark as Returned</h2>
+                    <table>
+                        <thead>
+                            <tr><th>Employee</th><th>Site</th><th>Start</th><th>Days Away</th><th>Cert Required</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="active_tb">
+                            <tr><td colspan="6" style="text-align: center; color: #999;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NEW RECORD -->
+            <div id="new" class="content">
+                <div class="card" style="max-width: 700px;">
+                    <h2>Add New Absence Record</h2>
+                    <div class="success" id="successMsg">✅ Record added successfully!</div>
+
+                    <div class="form-group-wrapper">
+                        <label><strong>Employee Name</strong></label>
+                        <input type="text" id="empName" placeholder="Start typing..." autocomplete="off">
+                        <div class="autocomplete-suggestions" id="suggestions"></div>
+                    </div>
+
+                    <div class="employee-details" id="empDetails">
+                        <div style="display: flex; justify-content: space-between;"><span><strong>ID:</strong> <span id="detailId">—</span></span><span><strong>Site:</strong> <span id="detailSite">—</span></span></div>
+                    </div>
+
+                    <label style="display: block; margin-bottom: 12px; font-weight: 600;">Absence Type</label>
+                    <div class="type-selector">
+                        <div class="type-option" onclick="selectType(this, 'Sickness')">
+                            <i class="fas fa-hospital-user" style="font-size: 20px; display: block; margin-bottom: 6px;"></i>
+                            <strong>Sickness</strong>
+                        </div>
+                        <div class="type-option" onclick="selectType(this, 'Absence')">
+                            <i class="fas fa-calendar-alt" style="font-size: 20px; display: block; margin-bottom: 6px;"></i>
+                            <strong>Absence</strong>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><strong>Reason</strong></label>
+                        <select id="reason" disabled>
+                            <option value="">-- Select a reason --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><strong>Start Date</strong></label>
+                            <input type="date" id="startDate" onchange="autoCalcCert()">
+                        </div>
+                        <div class="form-group">
+                            <label><strong>Return Date</strong></label>
+                            <input type="date" id="returnDate" onchange="autoCalcCert()">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><strong>Certification Type</strong></label>
+                        <select id="certType">
+                            <option value="">-- Auto-calculated --</option>
+                            <option value="Self Certify">Self Certify (≤7 days)</option>
+                            <option value="Doctor's Note">Doctor's Note (>7 days)</option>
+                        </select>
+                        <div class="cert-auto-info" id="certAutoInfo"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <button class="btn-primary" onclick="saveRecord()"><i class="fas fa-save"></i> Save</button>
+                        <button class="btn" onclick="clearForm()" style="background: #f0f0f0; color: #333;"><i class="fas fa-redo"></i> Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALL RECORDS -->
+            <div id="all" class="content">
+                <div class="card">
+                    <h2>All Absence Records</h2>
+                    <input type="text" placeholder="Search by employee, ID, or site..." id="searchBox" class="search-box" onkeyup="filterTable()">
+                    <table id="allTable">
+                        <thead>
+                            <tr><th>Employee</th><th>ID</th><th>Site</th><th>Start</th><th>Return</th><th>Reason</th><th>Cert Type</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="all_tb">
+                            <tr><td colspan="8" style="text-align: center; color: #999;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const admins = {Kim: "kim123", Maddie: "maddie123"};
+        const managers = {Fernando: "fernando123", Mauricio: "mauricio123", Neil: "neil123", Paola: "paola123", Patricia: "patricia123"};
+        
+        let role = null, user = null, sites = [];
+        let selectedEmp = null, selectedType = null, pendingRetIdx = null;
+        
+        const emps = [{"id": "100170", "name": "Mauricio Gutierrez", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "100252", "name": "Paola Andrea Agudelo Montoya", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "100310", "name": "Miguel Angel  Betancourt Moran", "site": "Employee", "manager": "TBD"}, {"id": "100437", "name": "Neil Fletcher", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "100464", "name": "Maria Patricia  Jaramillo", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "100492", "name": "Kim Stevenson", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "100678", "name": "Jose Fernando  Canaveval Ossa", "site": "Broadgate Quarter Landlords / Factset 6Th Floor", "manager": "Fernando Canaveral"}, {"id": "100679", "name": "Luis Guillermo Jimenez Martinez", "site": "Broadgate Quarter Landlords / Devonshire Square / Gbh", "manager": "Patricia Ryan"}, {"id": "100683", "name": "Erick  Da Silva Vieira", "site": "Broadgate Quarter Landlords / Factset 6Th Floor", "manager": "Fernando Canaveral"}, {"id": "100685", "name": "Jose Fabricio Pichucho Ramon", "site": "Broadgate Quarter Landlords", "manager": "Fernando Canaveral"}, {"id": "100687", "name": "Moises Castillo Lazo", "site": "Broadgate Quarter Landlords", "manager": "Fernando Canaveral"}, {"id": "100688", "name": "Alfonso Lopez Zapata", "site": "Broadgate Quarter Landlords", "manager": "Fernando Canaveral"}, {"id": "100700", "name": "Blanca Cecilia Cueva Velez", "site": "Cowen", "manager": "Fernando Canaveral"}, {"id": "100708", "name": "Yolanda Beatriz Cadena Cela", "site": "Ilm / Berry Street", "manager": "Patricia Ryan"}, {"id": "100712", "name": "Ruth Marleny Chagula Mendez", "site": "Broadgate Quarter Landlords / Factset 6Th Floor / Musto / Ecarx", "manager": "Patricia Ryan"}, {"id": "100738", "name": "Carlos Arturo Herrera Penaloza", "site": "Factset 10Th Floor", "manager": "Fernando Canaveral"}, {"id": "100829", "name": "Vicente Ivan Cueva Velez", "site": "Broadgate Quarter Landlords / Factset 6Th Floor", "manager": "Fernando Canaveral"}, {"id": "100866", "name": "Lucy Sonia Alcoba Veizaga", "site": "Demand Science", "manager": "TBD"}, {"id": "100868", "name": "Servio Franco  Quishpe Cabrera", "site": "Nh Investment (Nhqv)", "manager": "Paola Agudelo"}, {"id": "100898", "name": "Joshua James Moriarty", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "100907", "name": "Lina Maria Bonilla Jaramillo", "site": "Vermeer / Ilm / Musto", "manager": "Patricia Ryan"}, {"id": "100969", "name": "Ana Ruth Llanos Guerrero", "site": "Houthoff / China Mobile Uk", "manager": "Paola Agudelo"}, {"id": "101044", "name": "Gladys Adriana  Ossa Jaramillo", "site": "Broadgate Quarter Landlords / Factset 6Th & 10Th Floor Toilets", "manager": "Fernando Canaveral"}, {"id": "101056", "name": "Jose Raul Montoya Zapata", "site": "Vermeer / Skd / Skd Marina / Smarkets / Cavendish Munro", "manager": "Patricia Ryan"}, {"id": "101071", "name": "Jose Leonid Blandon Carmona", "site": "Skd / Smarkets", "manager": "Patricia Ryan"}, {"id": "101072", "name": "Marino Agudelo", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "101105", "name": "John  Openibo", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "101186", "name": "Dafne Burbano", "site": "Ilm / Skd", "manager": "Patricia Ryan"}, {"id": "101209", "name": "Marinela Alviva", "site": "Broadgate Quarter Landlords / Factset 6Th Floor / Factset 6Th & 10Th Floor Toilets", "manager": "Fernando Canaveral"}, {"id": "101213", "name": "Osvaldo Roldan", "site": "Broadgate Quarter Landlords", "manager": "Fernando Canaveral"}, {"id": "101238", "name": "Lina Diaz", "site": "Smarkets", "manager": "Patricia Ryan"}, {"id": "101328", "name": "Maira Alejandra Salazar Castillo", "site": "Golden Source / Devonshire Square / Strettons Redchurch Street", "manager": "Patricia Ryan"}, {"id": "101374", "name": "Monica Parra Ortega", "site": "Musto", "manager": "TBD"}, {"id": "101383", "name": "Sandra   Ramirez", "site": "Broadgate Quarter Landlords", "manager": "Fernando Canaveral"}, {"id": "101387", "name": "Sandra Patricia Castano", "site": "Broadgate Quarter Landlords / Cowen", "manager": "Fernando Canaveral"}, {"id": "101482", "name": "Guisella Bautista", "site": "Unispace / Gamma / Cavendish Munro", "manager": "Patricia Ryan"}, {"id": "101521", "name": "Nairon Pineda", "site": "Employee / Pod Highbury Stadium Square / Spacemade Fulham / Spacemade 76 Portland Place / Spacemade 10 St Bride Street / Woods Pier", "manager": "Paola Agudelo"}, {"id": "101526", "name": "Claudia Rodas", "site": "Spacemade 19 Portland Place", "manager": "Paola Agudelo"}, {"id": "101543", "name": "Caitlan Rosina Woolcombe", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "101595", "name": "Lorena Cespedes Cespedes", "site": "Factset 10Th Floor", "manager": "Fernando Canaveral"}, {"id": "101598", "name": "Ilda Marin", "site": "Aesop Office", "manager": "Paola Agudelo"}, {"id": "101601", "name": "Martha Cecilia Pena Ramos", "site": "Soda Studio", "manager": "Patricia Ryan"}, {"id": "101621", "name": "Diana Lucia Arango Rios", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101630", "name": "Elkin de Jesus Bustamante Acvedo", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101643", "name": "Myriam Ester German Lindao", "site": "Aesop Office", "manager": "Paola Agudelo"}, {"id": "101655", "name": "Carla Marisol Gotuzzo", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101657", "name": "Silvia Patricia Rodriguez Baez", "site": "Spacemade The Clement Rooms / Spacemade 10 St Bride Street", "manager": "Paola Agudelo"}, {"id": "101658", "name": "Juliana Andrea Mejia Londono", "site": "Spacemade Fulham", "manager": "TBD"}, {"id": "101666", "name": "Soledad Sisa", "site": "Spacemade The Clement Rooms / Spacemade 10 St Bride Street", "manager": "Paola Agudelo"}, {"id": "101668", "name": "Juan Diego Perez Munoz", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101683", "name": "Elsayed Ibrahim Elsayed Feith", "site": "Broadgate Quarter Landlords / Factset 6Th Floor / Ilm Wembley - Townsend / Spacemade Riley Studio", "manager": "Fernando Canaveral"}, {"id": "101686", "name": "Libia Tavera", "site": "Spacemade The Clement Rooms", "manager": "Paola Agudelo"}, {"id": "101707", "name": "Harvin Bejarano Mestizo", "site": "40 Clifton Street", "manager": "Patricia Ryan"}, {"id": "101715", "name": "Pauline Douglas", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101718", "name": "Erica Marcia Francis", "site": "Spacemade Birmingham 10X / The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101719", "name": "Anthony Clarke", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101720", "name": "Andrew Bell", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101721", "name": "Mathue Antony Nelson", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101722", "name": "Marcia Jacqueline Wright", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101724", "name": "Carlos Cordoba", "site": "Euronext", "manager": "Mauricio Gutierrez"}, {"id": "101725", "name": "Beatriz  Cortez", "site": "Euronext", "manager": "Mauricio Gutierrez"}, {"id": "101734", "name": "Luisa Fernanda Tobon Osorio", "site": "Vermeer / Ilm / Skd / Musto", "manager": "Patricia Ryan"}, {"id": "101742", "name": "Vicente Fredy Salguero Rubio", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101746", "name": "Milenni Erminia Perez", "site": "Ilm / Skd", "manager": "Patricia Ryan"}, {"id": "101777", "name": "Angela Elizabeth Pinnock-Porter", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101799", "name": "Vicente Patricio Lopez Herrera", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101801", "name": "Jefferson Leonel Salazar Parra", "site": "Spacemade Elmtree / Spacemade Welbeck Street", "manager": "Paola Agudelo"}, {"id": "101819", "name": "Narcisa Margoth Perez Salgado", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101829", "name": "Alex Broadhurst", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101831", "name": "Maria Elena Beltran Beltran", "site": "North Colonnade / Silver Raven", "manager": "Mauricio Gutierrez"}, {"id": "101848", "name": "Magaly Marlene Osinaga", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101857", "name": "Rosa Golpe Campos", "site": "North Colonnade / Euronext", "manager": "Mauricio Gutierrez"}, {"id": "101865", "name": "Jimena Bonilla Campagnoni", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101876", "name": "Victoria Eugenia Gomez Cardoza", "site": "Spacemade 76 Portland Place", "manager": "Paola Agudelo"}, {"id": "101879", "name": "Nelson Javier Sanchez Suarez", "site": "Pod Highbury Stadium Square", "manager": "TBD"}, {"id": "101881", "name": "Oliverio Camacho", "site": "Pod Highbury Stadium Square", "manager": "TBD"}, {"id": "101882", "name": "Richard Henry Reza Tufino", "site": "Pod Highbury Stadium Square", "manager": "TBD"}, {"id": "101888", "name": "Monica Maria Moreno Rivera", "site": "Spacemade 76 Portland Place", "manager": "Paola Agudelo"}, {"id": "101893", "name": "Hayleigh Philip Bagley", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101897", "name": "Elkin Alberto Zapata Agudelo", "site": "Ilm", "manager": "Paola Agudelo"}, {"id": "101901", "name": "Alba Lucia Osorio Florez", "site": "Vermeer / Ilm / Skd / Musto / Smarkets / Cavendish Munro", "manager": "Patricia Ryan"}, {"id": "101902", "name": "Beyanid Alvarez", "site": "Acaster Lloyds / Soda Studio", "manager": "Patricia Ryan"}, {"id": "101904", "name": "Madelaine Prole", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "101907", "name": "Jose Quiroga", "site": "Pod Highbury Stadium Square", "manager": "TBD"}, {"id": "101922", "name": "Elisa Monteiro", "site": "Splendid", "manager": "Fernando Canaveral"}, {"id": "101933", "name": "Margarita   Osorio Cortes", "site": "Spacemade Riley Studio", "manager": "TBD"}, {"id": "101935", "name": "Paredes Adriana", "site": "Factset 6Th Floor / North Colonnade / Euronext", "manager": "Mauricio Gutierrez"}, {"id": "101942", "name": "Dominik Patricio Lopez Delgado", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101944", "name": "Phillipa Hill", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101949", "name": "John  Ceron", "site": "Spacemade Riley Studio", "manager": "TBD"}, {"id": "101952", "name": "Alexandra Pacheco", "site": "Aesop Office", "manager": "Paola Agudelo"}, {"id": "101953", "name": "Jose Sanchez", "site": "Pod Highbury Stadium Square", "manager": "TBD"}, {"id": "101906", "name": "Tiffany Hedges", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "101905", "name": "Tina Love", "site": "Head Office", "manager": "Paul Openibo"}, {"id": "101951", "name": "Carol Dussan", "site": "Ecarx", "manager": "Patricia Ryan"}, {"id": "101955", "name": "Camila Tanquina", "site": "Vermeer", "manager": "TBD"}, {"id": "101956", "name": "Kevin Rodas", "site": "Aesop Office", "manager": "Paola Agudelo"}, {"id": "101959", "name": "Aissatou Bah", "site": "Spacemade Birmingham 10X", "manager": "Neil Fletcher"}, {"id": "101961", "name": "Teresa Costa", "site": "Spacemade Leeds Park House", "manager": "Neil Fletcher"}, {"id": "101964", "name": "Kadiatou Bah", "site": "Spacemade Birmingham 10X", "manager": "Neil Fletcher"}, {"id": "101965", "name": "Mariana Sousa", "site": "Spacemade Leeds Park House", "manager": "Neil Fletcher"}, {"id": "101958", "name": "Lucia Raquel De La Torre Vaca", "site": "North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101966", "name": "Fatoumata Diallo", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101960", "name": "Graciela Candela", "site": "Spacemade 42 Portland Place / Spacemade 10 St Bride Street", "manager": "Paola Agudelo"}, {"id": "101963", "name": "Ruth German", "site": "Factset 6Th Floor", "manager": "Fernando Canaveral"}, {"id": "101969", "name": "Conceicao Laurieth", "site": "Spacemade Leeds Park House", "manager": "Neil Fletcher"}, {"id": "101970", "name": "Jeanlis Carmona", "site": "Spacemade 76 Portland Place / Spacemade 42 Portland Place / Spacemade 10 St Bride Street / Woods House / Woods Pier / Silver Raven", "manager": "Paola Agudelo"}, {"id": "101972", "name": "Kellyn Orellana", "site": "Ilm / Smarkets", "manager": "Patricia Ryan"}, {"id": "101973", "name": "Rafaela Rodriguez", "site": "Aesop Office", "manager": "Paola Agudelo"}, {"id": "101978", "name": "Juan Ramirez", "site": "Studio Y", "manager": "Paola Agudelo"}, {"id": "101979", "name": "Eddier Isaza", "site": "Elmtree", "manager": "Paola Agudelo"}, {"id": "101974", "name": "Luz Molina", "site": "ILM", "manager": "Patricia Ryan"}, {"id": "101977", "name": "Jose Quizhpi", "site": "Unispace", "manager": "Patricia Ryan"}, {"id": "101982", "name": "Carlos Palma", "site": "25 North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101984", "name": "Gabriel Garcia Quilumbaquin", "site": "ILM", "manager": "Patricia Ryan"}, {"id": "101985", "name": "Justice Atobrah", "site": "The Colmore Building", "manager": "Mauricio Gutierrez"}, {"id": "101992", "name": "Yajaira  Figuereo", "site": "Fulham Works", "manager": "Paola Agudelo"}, {"id": "101990", "name": "Melisa  Gonzalez", "site": "Riley Studios", "manager": "Paola Agudelo"}, {"id": "101991", "name": "Niove Cespedes Cespedes", "site": "Studio Y", "manager": "Paola Agudelo"}, {"id": "101996", "name": "Mary Ossa", "site": "Aesop Office", "manager": "Paola Agudelo"}, {"id": "101989", "name": "Fernando Silva", "site": "25 North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "101994", "name": "Brian David Gutierrez Ossa", "site": "Various", "manager": "Mauricio Gutierrez"}, {"id": "101987", "name": "Sheriff Animashaun", "site": "Factset", "manager": "Fernando Canaveral"}, {"id": "101995", "name": "Nancy Valencia", "site": "Various", "manager": "Mauricio Gutierrez"}, {"id": "102003", "name": "Maria Vallejo", "site": "76 Portland Place", "manager": "Paola Agudelo"}, {"id": "101998", "name": "Olga  Martinez", "site": "19 Portland Place", "manager": "Paola Agudelo"}, {"id": "102004", "name": "Hugo Ramirez", "site": "25 North Colonnade", "manager": "Mauricio Gutierrez"}, {"id": "102005", "name": "Walter Mendoza", "site": "Yellow Building", "manager": "TBD"}, {"id": "102001", "name": "Geronimo Ramirez", "site": "Mosaic", "manager": "Paola Agudelo"}, {"id": "102011", "name": "Nimio Vera", "site": "Spacemade Elmtree", "manager": "Paola Agudelo"}, {"id": "102014", "name": "Vanessa Penafiel", "site": "Various", "manager": "Mauricio Gutierrez"}, {"id": "102009", "name": "Viviana Perez", "site": "Knotel Mosaic", "manager": "Paola Agudelo"}, {"id": "102012", "name": "Francisco Ramos", "site": "76 Portland Place", "manager": "Paola Agudelo"}, {"id": "102015", "name": "Jordy Cadena Cela", "site": "Various", "manager": "Mauricio Gutierrez"}, {"id": "102010", "name": "Matias Plana", "site": "34 Queen Anne street", "manager": "TBD"}, {"id": "102016", "name": "Andrea  Vernaza", "site": "Future Dreams", "manager": "Patricia Ryan"}, {"id": "101126", "name": "Ernesto Zuniga Banguera", "site": "Skd / Skd Marina / Cavendish Munro", "manager": "Patricia Ryan"}, {"id": "101362", "name": "Carlos Alvaro Valencia Parra", "site": "Vermeer / Skd / Cavendish Munro", "manager": "Patricia Ryan"}, {"id": "101962", "name": "Teresa Domingos", "site": "Spacemade Leeds Park House", "manager": "Neil Fletcher"}, {"id": "102018", "name": "Ana  Lopez", "site": "Spacemade 22/23 Bedford Square", "manager": "Paola Agudelo"}, {"id": "102019", "name": "Marcia Pallo", "site": "Spacemade 22/23 Bedford Square", "manager": "Paola Agudelo"}, {"id": "102020", "name": "Rosario Los", "site": "Spacemade 22/23 Bedford Square", "manager": "Paola Agudelo"}, {"id": "102013", "name": "Daniela Lachapelle", "site": "Factset", "manager": "Fernando Canaveral"}, {"id": "102022", "name": "Salim Shariff", "site": "Bedford Square", "manager": "Paola Agudelo"}, {"id": "102026", "name": "Erika  Molina", "site": "Factset", "manager": "Fernando Canaveral"}, {"id": "102024", "name": "Muhammad Muazu", "site": "Factset", "manager": "Fernando Canaveral"}, {"id": "102021", "name": "Paola Marcillo", "site": "Spacemade Elmtree", "manager": "Paola Agudelo"}, {"id": "101863", "name": "Luz Marina Vanegas Giraldo", "site": "Spacemade 42 Portland Place / Spacemade 50 Queen Anne Street", "manager": "Paola Agudelo"}, {"id": "102028", "name": "Christian Zapata", "site": "Mosaic", "manager": "Paola Agudelo"}];
+        const recs = [{"employeeName": "John Smith", "employeeID": "E001", "site": "London HQ", "startDate": "2026-08-15", "returnDate": "", "reason": "Cold/Flu", "certType": "Self Certify", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-001", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-001", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-001"}, {"employeeName": "Sarah Johnson", "employeeID": "E002", "site": "Manchester Office", "startDate": "2026-08-10", "returnDate": "2026-08-22", "reason": "Stomach Bug", "certType": "Doctor's Note", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-002", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-002", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-002"}, {"employeeName": "Michael Brown", "employeeID": "E003", "site": "Birmingham Site", "startDate": "2026-08-18", "returnDate": "", "reason": "Back Pain", "certType": "Doctor's Note", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-003", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-003", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-003"}, {"employeeName": "Emma Davis", "employeeID": "E004", "site": "Leeds Branch", "startDate": "2026-08-20", "returnDate": "", "reason": "COVID", "certType": "Self Certify", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-004", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-004", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-004"}, {"employeeName": "David Wilson", "employeeID": "E005", "site": "Liverpool Office", "startDate": "2026-08-12", "returnDate": "2026-08-25", "reason": "Personal Appointment", "certType": "Self Certify", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-005", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-005", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-005"}, {"employeeName": "Lisa Anderson", "employeeID": "E006", "site": "Bristol HQ", "startDate": "2026-08-05", "returnDate": "2026-08-28", "reason": "Bereavement", "certType": "Doctor's Note", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-006", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-006", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-006"}, {"employeeName": "James Taylor", "employeeID": "E007", "site": "Edinburgh Office", "startDate": "2026-08-16", "returnDate": "", "reason": "Headache/Migraine", "certType": "Self Certify", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-007", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-007", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-007"}, {"employeeName": "Rachel Martinez", "employeeID": "E008", "site": "Glasgow Site", "startDate": "2026-08-08", "returnDate": "2026-08-24", "reason": "Dental/Eye Care", "certType": "Self Certify", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-008", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-008", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-008"}, {"employeeName": "Christopher Lee", "employeeID": "E009", "site": "Cardiff Office", "startDate": "2026-08-21", "returnDate": "", "reason": "Training/Development", "certType": "Self Certify", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-009", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-009", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-009"}, {"employeeName": "Amanda White", "employeeID": "E010", "site": "Belfast Branch", "startDate": "2026-08-14", "returnDate": "2026-08-26", "reason": "Infection/Fever", "certType": "Doctor's Note", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-010", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-010", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-010"}, {"employeeName": "Thomas Harris", "employeeID": "E011", "site": "London HQ", "startDate": "2026-08-19", "returnDate": "", "reason": "Injury/Accident", "certType": "Doctor's Note", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-011", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-011", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-011"}, {"employeeName": "Nicole Clark", "employeeID": "E012", "site": "Manchester Office", "startDate": "2026-08-17", "returnDate": "", "reason": "Mental Health/Stress", "certType": "Doctor's Note", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-012", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-012", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-012"}, {"employeeName": "Kevin Robinson", "employeeID": "E013", "site": "Birmingham Site", "startDate": "2026-08-06", "returnDate": "2026-08-27", "reason": "Study Leave", "certType": "Self Certify", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-013", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-013", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-013"}, {"employeeName": "Victoria Thompson", "employeeID": "E014", "site": "Leeds Branch", "startDate": "2026-08-11", "returnDate": "2026-08-23", "reason": "Ongoing/Chronic Condition", "certType": "Doctor's Note", "docusignSelfCertifyLink": "https://na3.docusign.net/rooms/guide/self-certify-014", "docusignDoctorNoteLink": "https://na3.docusign.net/rooms/guide/doctors-note-014", "docusignReturnLink": "https://na3.docusign.net/rooms/guide/rtw-014"}];
+        const mgrs = {"Paul Openibo": ["Head Office"], "Fernando Canaveral": ["Broadgate Quarter Landlords", "Broadgate Quarter Landlords / Cowen", "Broadgate Quarter Landlords / Factset 6Th & 10Th Floor Toilets", "Broadgate Quarter Landlords / Factset 6Th Floor", "Broadgate Quarter Landlords / Factset 6Th Floor / Factset 6Th & 10Th Floor Toilets", "Broadgate Quarter Landlords / Factset 6Th Floor / Ilm Wembley - Townsend / Spacemade Riley Studio", "Cowen", "Factset", "Factset 10Th Floor", "Factset 6Th Floor", "Splendid"], "Patricia Ryan": ["40 Clifton Street", "Acaster Lloyds / Soda Studio", "Broadgate Quarter Landlords / Devonshire Square / Gbh", "Broadgate Quarter Landlords / Factset 6Th Floor / Musto / Ecarx", "Ecarx", "Future Dreams", "Golden Source / Devonshire Square / Strettons Redchurch Street", "ILM", "Ilm / Berry Street", "Ilm / Skd", "Ilm / Smarkets", "Skd / Skd Marina / Cavendish Munro", "Skd / Smarkets", "Smarkets", "Soda Studio", "Unispace", "Unispace / Gamma / Cavendish Munro", "Vermeer / Ilm / Musto", "Vermeer / Ilm / Skd / Musto", "Vermeer / Ilm / Skd / Musto / Smarkets / Cavendish Munro", "Vermeer / Skd / Cavendish Munro", "Vermeer / Skd / Skd Marina / Smarkets / Cavendish Munro"], "Paola Agudelo": ["19 Portland Place", "76 Portland Place", "Aesop Office", "Bedford Square", "Elmtree", "Employee / Pod Highbury Stadium Square / Spacemade Fulham / Spacemade 76 Portland Place / Spacemade 10 St Bride Street / Woods Pier", "Fulham Works", "Houthoff / China Mobile Uk", "Ilm", "Knotel Mosaic", "Mosaic", "Nh Investment (Nhqv)", "Riley Studios", "Spacemade 19 Portland Place", "Spacemade 22/23 Bedford Square", "Spacemade 42 Portland Place / Spacemade 10 St Bride Street", "Spacemade 42 Portland Place / Spacemade 50 Queen Anne Street", "Spacemade 76 Portland Place", "Spacemade 76 Portland Place / Spacemade 42 Portland Place / Spacemade 10 St Bride Street / Woods House / Woods Pier / Silver Raven", "Spacemade Elmtree", "Spacemade Elmtree / Spacemade Welbeck Street", "Spacemade The Clement Rooms", "Spacemade The Clement Rooms / Spacemade 10 St Bride Street", "Studio Y"], "Mauricio Gutierrez": ["19 Portland Place", "25 North Colonnade", "76 Portland Place", "Aesop Office", "Bedford Square", "Broadgate Quarter Landlords", "Broadgate Quarter Landlords / Cowen", "Broadgate Quarter Landlords / Factset 6Th & 10Th Floor Toilets", "Broadgate Quarter Landlords / Factset 6Th Floor", "Broadgate Quarter Landlords / Factset 6Th Floor / Factset 6Th & 10Th Floor Toilets", "Broadgate Quarter Landlords / Factset 6Th Floor / Ilm Wembley - Townsend / Spacemade Riley Studio", "Cowen", "Elmtree", "Employee / Pod Highbury Stadium Square / Spacemade Fulham / Spacemade 76 Portland Place / Spacemade 10 St Bride Street / Woods Pier", "Euronext", "Factset", "Factset 10Th Floor", "Factset 6Th Floor", "Factset 6Th Floor / North Colonnade / Euronext", "Fulham Works", "Houthoff / China Mobile Uk", "Ilm", "Knotel Mosaic", "Mosaic", "Nh Investment (Nhqv)", "North Colonnade", "North Colonnade / Euronext", "North Colonnade / Silver Raven", "Riley Studios", "Spacemade 19 Portland Place", "Spacemade 22/23 Bedford Square", "Spacemade 42 Portland Place / Spacemade 10 St Bride Street", "Spacemade 42 Portland Place / Spacemade 50 Queen Anne Street", "Spacemade 76 Portland Place", "Spacemade 76 Portland Place / Spacemade 42 Portland Place / Spacemade 10 St Bride Street / Woods House / Woods Pier / Silver Raven", "Spacemade Birmingham 10X / The Colmore Building", "Spacemade Elmtree", "Spacemade Elmtree / Spacemade Welbeck Street", "Spacemade The Clement Rooms", "Spacemade The Clement Rooms / Spacemade 10 St Bride Street", "Splendid", "Studio Y", "The Colmore Building", "Various"], "Neil Fletcher": ["Spacemade Birmingham 10X", "Spacemade Leeds Park House"]};
+        const reasons = {"Sickness": ["1 - Cold / Flu / COVID (General respiratory/sniffles)", "2 - Stomach Bug / Vomiting (Food poisoning, gastro)", "3 - Headache / Migraine", "4 - Back Pain / Musculoskeletal (Pulled muscles, physical strains)", "5 - Infection / Fever (Other infections)", "6 - Women's Health (Period pain, menopause symptoms)", "7 - Ongoing / Chronic Condition (Diabetes, asthma, known issues)", "8 - Mental Health / Stress", "9 - Dental / Eye Care", "10 - Injury / Accident", "11 - Other Medical Condition"], "Absence": ["Personal Appointment", "Family Emergency", "Bereavement", "Training / Development", "Company Event", "Study Leave", "Unpaid Leave", "Jury Duty", "Medical Appointment (Non-urgent)", "Car/Home Repair", "Other"]};
+
+        function doLogin() {
+            const t = document.getElementById('type').value;
+            const u = document.getElementById('user').value.trim();
+            const p = document.getElementById('pass').value;
+            const e = document.getElementById('err');
+            
+            e.classList.remove('show');
+            if (!t || !u || !p) { e.textContent = 'Fill all fields'; e.classList.add('show'); return; }
+
+            if (t === 'admin' && admins[u] === p) { role = 'admin'; user = u; sites = []; show(); }
+            else if (t === 'manager' && managers[u] === p) { role = 'manager'; user = u; sites = mgrs[u] || []; show(); }
+            else { e.textContent = 'Invalid'; e.classList.add('show'); }
+        }
+
+        function show() { document.getElementById('loginPage').style.display = 'none'; document.getElementById('mainApp').classList.add('active'); document.getElementById('uname').textContent = user; document.getElementById('urole').textContent = role === 'admin' ? '(Admin)' : '(Manager)'; setupSearch(); updateData(); }
+
+        function getVisible() { return role === 'admin' ? recs : recs.filter(r => { const e = emps.find(x => x.name === r.employeeName); return e && sites.some(s => e.site.includes(s) || s.includes(e.site)); }); }
+
+        function getVisibleEmps() { return role === 'admin' ? emps : emps.filter(e => sites.some(s => e.site.includes(s) || s.includes(e.site))); }
+
+        function setupSearch() {
+            const inp = document.getElementById('empName');
+            const sug = document.getElementById('suggestions');
+            inp.addEventListener('input', function() {
+                const term = this.value.toLowerCase().trim();
+                sug.innerHTML = '';
+                if (term.length < 2) { sug.classList.remove('show'); return; }
+                const vis = getVisibleEmps();
+                const fil = vis.filter(e => e.name.toLowerCase().includes(term)).slice(0, 10);
+                if (fil.length > 0) {
+                    sug.classList.add('show');
+                    fil.forEach(e => {
+                        const d = document.createElement('div');
+                        d.className = 'autocomplete-suggestion';
+                        d.innerHTML = `<strong>${e.name}</strong> (ID: ${e.id})`;
+                        d.onclick = () => selectEmp(e);
+                        sug.appendChild(d);
+                    });
+                }
+            });
+            document.addEventListener('click', function(e) {
+                if (e.target !== inp && !e.target.closest('.autocomplete-suggestion')) sug.classList.remove('show');
+            });
+        }
+
+        function selectEmp(e) {
+            selectedEmp = e;
+            document.getElementById('empName').value = e.name;
+            document.getElementById('suggestions').classList.remove('show');
+            document.getElementById('empDetails').classList.add('show');
+            document.getElementById('detailId').textContent = e.id;
+            document.getElementById('detailSite').textContent = e.site;
+        }
+
+        function selectType(el, t) {
+            selectedType = t;
+            document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            const r = document.getElementById('reason');
+            r.disabled = false;
+            r.innerHTML = '<option value="">-- Select a reason --</option>';
+            if (reasons[t]) reasons[t].forEach(x => {
+                const o = document.createElement('option');
+                o.value = x; o.textContent = x;
+                r.appendChild(o);
+            });
+        }
+
+        function calcDays(s, e) {
+            const start = new Date(s);
+            const end = new Date(e);
+            return Math.ceil(Math.abs(end - start) / (1000*60*60*24));
+        }
+
+        function autoCalcCert() {
+            const s = document.getElementById('startDate').value;
+            if (!s) return;
+            const e = document.getElementById('returnDate').value || new Date().toISOString().split('T')[0];
+            const d = calcDays(s, e);
+            const c = document.getElementById('certType');
+            const i = document.getElementById('certAutoInfo');
+            if (d <= 7) {
+                c.value = 'Self Certify';
+                i.innerHTML = `✓ Self Certify (${d} days)`;
+                i.style.background = '#e8f5e9'; i.style.color = '#2e7d32';
+            } else {
+                c.value = "Doctor's Note";
+                i.innerHTML = `⚠ Doctor's Note Required (${d} days)`;
+                i.style.background = '#fff3e0'; i.style.color = '#e65100';
+            }
+        }
+
+        function openReturnModal(idx) {
+            pendingRetIdx = idx;
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('returnDateInput').value = today;
+            document.getElementById('certTypeInfo').innerHTML = '';
+            document.getElementById('docusignInfo').innerHTML = '';
+            document.getElementById('returnModal').classList.add('show');
+        }
+
+        function closeReturnModal() { document.getElementById('returnModal').classList.remove('show'); pendingRetIdx = null; }
+
+        function calcCertOnReturn() {
+            const s = recs[pendingRetIdx]?.startDate;
+            const e = document.getElementById('returnDateInput').value;
+            if (!s || !e) return;
+            const d = calcDays(s, e);
+            const c = document.getElementById('certTypeInfo');
+            const ds = document.getElementById('docusignInfo');
+            const rec = recs[pendingRetIdx];
+            c.innerHTML = ''; ds.innerHTML = '';
+            
+            if (d <= 7) {
+                c.innerHTML = `<div class="info-box">✓ Self Certify - ${d} days</div>`;
+                let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">';
+                html += `<div class="docusign-link" style="margin: 0; opacity: 0.7;">
+                    <strong style="font-size: 13px;"><i class="fas fa-file-contract"></i> Self Certify Form</strong>
+                    <p style="font-size: 11px; margin-top: 6px; color: #999;">Will open on confirm</p>
+                </div>`;
+                html += `<div class="docusign-link" style="margin: 0; opacity: 0.7;">
+                    <strong style="font-size: 13px;"><i class="fas fa-file-contract"></i> Return to Work</strong>
+                    <p style="font-size: 11px; margin-top: 6px; color: #999;">Will open on confirm</p>
+                </div>`;
+                html += '</div>';
+                ds.innerHTML = html;
+            } else {
+                c.innerHTML = `<div class="warning-box">⚠ Doctor's Note Required - ${d} days</div>`;
+                let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">';
+                html += `<div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; border-radius: 4px;">
+                    <strong style="font-size: 13px; color: #e65100;"><i class="fas fa-hospital-user"></i> GP Appointment</strong>
+                    <p style="font-size: 11px; margin-top: 6px; color: #e65100;">Employee must visit GP and obtain medical certificate</p>
+                </div>`;
+                html += `<div class="docusign-link" style="margin: 0; opacity: 0.7;">
+                    <strong style="font-size: 13px;"><i class="fas fa-file-contract"></i> Return to Work</strong>
+                    <p style="font-size: 11px; margin-top: 6px; color: #999;">Will open on confirm</p>
+                </div>`;
+                html += '</div>';
+                ds.innerHTML = html;
+            }
+        }
+
+        function buildDocuSignURL(record, formType, returnDate) {
+            // Base DocuSign PowerForm URL
+            const baseURL = 'https://eu.docusign.net/Member/PowerFormSigning.aspx';
+            
+            // PowerForm IDs
+            const powerFormIds = {
+                'selfCertify': '9e076106-b390-43e7-a0f3-7eddf0836421',  // Self Certify form
+                'doctorsNote': '9e076106-b390-43e7-a0f3-7eddf0836421',  // Doctor's Note (same as Self Certify)
+                'rtw': '0788bd8c-d7e4-44c7-af12-0d57c80640d1'           // RTW form
+            };
+            
+            // Account & environment
+            const env = 'eu';
+            const acct = 'c4dc142a-4be3-4a01-89fa-bb004130c7a8';
+            
+            // Default user info
+            const hrUserName = 'Maddie Prole';
+            const hrEmail = 'maddie@keyenvirosolutions.co.uk';
+            const managerUserName = 'Manager Name';
+            const managerEmail = 'manager@keyenvirosolutions.co.uk';
+            
+            // Format dates for DocuSign (DD/MM/YYYY)
+            const startDate = new Date(record.startDate).toLocaleDateString('en-GB');
+            const endDate = returnDate ? new Date(returnDate).toLocaleDateString('en-GB') : new Date().toLocaleDateString('en-GB');
+            
+            // Calculate days off
+            const start = new Date(record.startDate);
+            const end = new Date(returnDate || new Date());
+            const daysOff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+            
+            // Build params - using the actual field names from your PowerForm
+            const params = {
+                PowerFormId: powerFormIds[formType] || powerFormIds['rtw'],
+                env: env,
+                acct: acct,
+                v: '2',
+                Employee_UserName: record.employeeName,
+                Employee_Email: 'employee@company.com',
+                Manager_UserName: managerUserName,
+                Manager_Email: managerEmail,
+                HR_UserName: hrUserName,
+                HR_Email: hrEmail,
+                FullName: record.employeeName,
+                'PayrollNumber 99fc825d-8a5f-4acb-b5ba-9a31a471819f': record.employeeID || '',
+                Site: record.site,
+                'StartDate 7f9f45f4-6c7b-4398-9924-6f1b1dd563dc': startDate,
+                'EndDate 45214027-8263-43fa-8b3a-bff8d1b386a4': endDate,
+                'Reason 08c49cba-62bd-411d-bec8-955db0d3bb40': record.reason,
+                DaysOff: daysOff,
+                History: '0'
+            };
+            
+            // Build URL
+            const queryString = Object.keys(params)
+                .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(params[key]))
+                .join('&');
+            
+            return baseURL + '?' + queryString;
+        }
+
+        function confirmReturn() {
+            const rd = document.getElementById('returnDateInput').value;
+            if (!rd) { alert('Select return date'); return; }
+            const r = recs[pendingRetIdx];
+            const d = calcDays(r.startDate, rd);
+            r.returnDate = rd;
+            r.certType = d <= 7 ? 'Self Certify' : "Doctor's Note";
+            
+            console.log('Record:', r);
+            console.log('Days:', d);
+            console.log('Return Date:', rd);
+            
+            let formsOpened = 0;
+            let message = '';
+            
+            // Handle certification
+            if (d <= 7) {
+                // Self Certify - open form
+                const selfCertifyURL = buildDocuSignURL(r, 'selfCertify', rd);
+                console.log('Opening Self Certify:', selfCertifyURL);
+                const w1 = window.open(selfCertifyURL, '_blank');
+                if (w1) {
+                    formsOpened++;
+                    message = 'Opened: Self Certify form\n';
+                } else {
+                    console.log('Self Certify window blocked');
+                }
+            } else {
+                // Doctor's Note - employee must get from GP
+                message = 'Employee must obtain Doctor\'s Note from their GP\n';
+                alert('⚠️ DOCTOR\'S NOTE REQUIRED\n\n' + 
+                      'For absences over 7 days, the employee must:\n' +
+                      '1. Visit their GP\n' +
+                      '2. Obtain a medical certificate\n' +
+                      '3. Submit to HR\n\n' +
+                      'RTW form will now open for completion.');
+            }
+            
+            // Open RTW form (always)
+            const rtwURL = buildDocuSignURL(r, 'rtw', rd);
+            console.log('Opening RTW:', rtwURL);
+            const w3 = window.open(rtwURL, '_blank');
+            if (w3) {
+                formsOpened++;
+                message += 'Opened: Return to Work form';
+            } else {
+                console.log('RTW window blocked');
+            }
+            
+            if (formsOpened === 0) {
+                alert('⚠️ Forms could not open - check browser pop-up blocker or console for errors');
+            } else {
+                alert(`✅ ${message}\n\nReturn marked as ${new Date(rd).toLocaleDateString()}`);
+            }
+            
+            updateData();
+            closeReturnModal();
+        }
+
+        function openHistory(n) {
+            const e = emps.find(x => x.name === n);
+            const h = recs.filter(r => r.employeeName === n);
+            let p = `<div class="employee-profile"><div class="profile-row"><span><strong>Name:</strong></span><span>${n}</span></div><div class="profile-row"><span><strong>ID:</strong></span><span>${e?.id || '—'}</span></div><div class="profile-row"><span><strong>Site:</strong></span><span>${e?.site || '—'}</span></div><div class="profile-row"><span><strong>Total:</strong></span><span>${h.length}</span></div></div>`;
+            let records = h.length === 0 ? '<p style="text-align: center; color: #999;">No records</p>' : h.sort((a,b) => new Date(b.startDate) - new Date(a.startDate)).map(r => {
+                const active = !r.returnDate;
+                const days = Math.floor((new Date() - new Date(r.startDate))/(1000*60*60*24));
+                return `<div class="absence-record ${active ? 'active' : 'completed'}"><div class="absence-header"><div><div class="absence-type">${r.reason}</div><div style="font-size: 11px; color: #666; margin-top: 4px;"><strong>${r.certType}</strong></div></div><div class="absence-status" style="background: ${active ? '#fff3e0' : '#e8f5e9'}; color: ${active ? '#e65100' : '#2e7d32'};">${active ? '🟠 Active' : '✅ Done'}</div></div><div class="absence-detail"><strong>Started:</strong> ${r.startDate}${active ? ` (${days} days)` : ''}</div>${r.returnDate ? `<div class="absence-detail"><strong>Returned:</strong> ${r.returnDate}</div>` : ''}</div>`;
+            }).join('');
+            document.getElementById('historyTitle').textContent = `History - ${n}`;
+            document.getElementById('historyBody').innerHTML = p + records;
+            document.getElementById('historyModal').classList.add('show');
+        }
+
+        function closeHistoryModal() { document.getElementById('historyModal').classList.remove('show'); }
+
+        function saveRecord() {
+            if (!selectedEmp) { alert('Select employee'); return; }
+            if (!selectedType) { alert('Select type'); return; }
+            const r = document.getElementById('reason').value;
+            if (!r) { alert('Select reason'); return; }
+            const s = document.getElementById('startDate').value;
+            if (!s) { alert('Enter start date'); return; }
+            const rt = document.getElementById('returnDate').value;
+            let c = document.getElementById('certType').value;
+            if (!c) { alert('Set cert type'); return; }
+            recs.push({ employeeName: selectedEmp.name, employeeID: selectedEmp.id, site: selectedEmp.site, startDate: s, returnDate: rt || '', reason: r, certType: c });
+            document.getElementById('successMsg').classList.add('show');
+            setTimeout(() => document.getElementById('successMsg').classList.remove('show'), 3000);
+            clearForm();
+            updateData();
+        }
+
+        function clearForm() {
+            document.getElementById('empName').value = '';
+            document.getElementById('reason').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('returnDate').value = '';
+            document.getElementById('certType').value = '';
+            document.getElementById('certAutoInfo').innerHTML = '';
+            document.getElementById('empDetails').classList.remove('show');
+            document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+            selectedEmp = null; selectedType = null;
+            document.getElementById('reason').disabled = true;
+        }
+
+        function updateData() {
+            const vis = getVisible();
+            const a = vis.filter(r => !r.returnDate).length;
+            document.getElementById('total').textContent = vis.length;
+            document.getElementById('active').textContent = a;
+            document.getElementById('sites').textContent = sites.length || '∞';
+            document.getElementById('emps').textContent = emps.length;
+
+            const act = vis.filter(r => !r.returnDate).map(r => {
+                const d = Math.floor((new Date() - new Date(r.startDate))/(1000*60*60*24));
+                const idx = recs.findIndex(x => x.employeeName === r.employeeName && x.startDate === r.startDate);
+                const certType = d <= 7 ? 'Self Certify' : "Doctor's Note";
+                const hasDocuSign = recs[idx]?.docusignReturnLink ? '✓' : '–';
+                const certDisplay = d <= 7 ? `<span style="color: #4caf50;">✓ Self Certify</span>` : `<span style="color: #ff9800;"><strong>⚠ Doctor's Note</strong> ${hasDocuSign === '✓' ? `<br><small style="color: #ff9800;">+ DocuSign RTW</small>` : ''}</span>`;
+                return `<tr><td onclick="openHistory('${r.employeeName}')" class="name">${r.employeeName}</td><td>${r.site}</td><td>${r.startDate}</td><td><strong>${d}</strong> days</td><td>${certDisplay}</td><td><button class="btn" onclick="openReturnModal(${idx})">Mark Returned</button></td></tr>`;
+            }).join('') || '<tr><td colspan="6" style="text-align: center; color: #999;">No active absences</td></tr>';
+            document.getElementById('active_tb').innerHTML = act;
+
+            const all = vis.map(r => {
+                const idx = recs.findIndex(x => x.employeeName === r.employeeName && x.startDate === r.startDate);
+                return `<tr><td onclick="openHistory('${r.employeeName}')" class="name">${r.employeeName}</td><td>${r.employeeID || '—'}</td><td>${r.site}</td><td>${r.startDate}</td><td>${r.returnDate || '<em style="color: #999;">Pending</em>'}</td><td>${r.reason}</td><td>${r.certType}</td><td>${!r.returnDate ? `<button class="btn" onclick="openReturnModal(${idx})">✓</button>` : '✅'}</td></tr>`;
+            }).join('');
+            document.getElementById('all_tb').innerHTML = all;
+        }
+
+        function filterTable() {
+            const term = document.getElementById('searchBox').value.toLowerCase();
+            document.querySelectorAll('#allTable tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        }
+
+        function showTab(evt, n) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+            document.getElementById(n).classList.add('active');
+            evt.target.classList.add('active');
+        }
+
+        function doLogout() {
+            document.getElementById('mainApp').classList.remove('active');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('type').value = '';
+            document.getElementById('user').value = '';
+            document.getElementById('pass').value = '';
+        }
+    </script>
+</body>
+</html>
